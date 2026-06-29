@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SketchArtist — M1 Clickable Mockup v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-violet:#5B3DF5;
+    --ink-violet-dk:#4a2fd6;
+    --coral:#FF5A5F;
+    --charcoal:#1A1A1A;
+    --paper:#FAF7F2;
+    --cloud:#FFFFFF;
+    --yellow:#FFD23F;
+    --teal:#2EC4B6;
+    --grape:#9B5DE5;
+    --warning:#FF9F1C;
+    --error:#E63946;
+    --muted:#6B6B6B;
+    --line:#E7E2DA;
+    --ui:'Plus Jakarta Sans',system-ui,sans-serif;
+    --display:'Bricolage Grotesque',var(--ui);
+    --hand:'Caveat',cursive;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;font-family:var(--ui);background:
+      radial-gradient(circle at 20% 10%, #efeae1 0, transparent 40%),
+      radial-gradient(circle at 90% 80%, #eee9df 0, transparent 45%),
+      var(--paper);
+    color:var(--charcoal);min-height:100vh;padding:22px 12px 60px}
+
+  /* reviewer toolbar */
+  .toolbar{max-width:430px;margin:0 auto 16px;display:flex;align-items:center;gap:8px;
+    background:var(--cloud);border:1px solid var(--line);border-radius:14px;padding:8px 10px;
+    box-shadow:0 2px 0 var(--line)}
+  .toolbar .title{font-family:var(--display);font-weight:800;font-size:14px;margin-right:auto;letter-spacing:-.01em}
+  .toolbar .title span{color:var(--ink-violet)}
+  .toolbar button{font-family:var(--ui);font-weight:700;border:none;border-radius:9px;
+    background:var(--ink-violet);color:#fff;padding:7px 10px;cursor:pointer;font-size:13px}
+  .toolbar button:disabled{opacity:.35;cursor:default}
+  .toolbar select{font-family:var(--ui);font-weight:600;border:1px solid var(--line);border-radius:9px;
+    padding:6px 8px;background:var(--paper);font-size:12px;max-width:150px}
+
+  /* phone */
+  .phone{max-width:390px;margin:0 auto;background:var(--charcoal);border-radius:46px;padding:11px;
+    box-shadow:0 24px 50px -18px rgba(26,26,26,.55), 0 0 0 2px #000 inset}
+  .viewport{position:relative;height:760px;background:var(--paper);border-radius:36px;overflow:hidden}
+  .notch{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:120px;height:24px;
+    background:var(--charcoal);border-radius:0 0 16px 16px;z-index:50}
+
+  .screen{position:absolute;inset:0;display:none;flex-direction:column;overflow-y:auto;padding:38px 20px 24px}
+  .screen.active{display:flex;animation:fade .28s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+  .scr-label{position:absolute;top:10px;right:16px;font-size:10px;font-weight:700;color:var(--muted);
+    letter-spacing:.04em;text-transform:uppercase;z-index:40}
+
+  h1,h2,h3{font-family:var(--display);letter-spacing:-.02em;margin:0}
+  .muted{color:var(--muted)}
+  .center{text-align:center}
+  .grow{flex:1}
+  .row{display:flex;gap:10px}
+  .col{display:flex;flex-direction:column;gap:10px}
+
+  .btn{font-family:var(--ui);font-weight:700;font-size:16px;border:none;border-radius:16px;
+    padding:15px 18px;cursor:pointer;width:100%;transition:transform .06s}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:var(--ink-violet);color:#fff;box-shadow:0 4px 0 var(--ink-violet-dk)}
+  .btn-coral{background:var(--coral);color:#fff;box-shadow:0 4px 0 #d8474b}
+  .btn-ghost{background:transparent;color:var(--charcoal);border:2px solid var(--line);font-weight:600}
+  .btn-sm{padding:10px 12px;font-size:14px;border-radius:12px;width:auto}
+
+  .card{background:var(--cloud);border:1px solid var(--line);border-radius:20px;padding:16px;
+    box-shadow:0 2px 0 var(--line)}
+  .pick-card{cursor:pointer;transition:border-color .12s, transform .06s}
+  .pick-card:active{transform:translateY(1px)}
+  .pick-card.sel{border-color:var(--ink-violet);box-shadow:0 0 0 3px rgba(91,61,245,.18)}
+
+  .back{background:none;border:none;font-family:var(--ui);font-weight:700;color:var(--muted);
+    cursor:pointer;font-size:14px;padding:4px 0;display:flex;align-items:center;gap:5px}
+
+  .logo-mark{width:84px;height:84px;border-radius:24px;background:var(--ink-violet);
+    display:grid;place-items:center;box-shadow:0 6px 0 var(--ink-violet-dk)}
+  .wordmark{font-family:var(--display);font-weight:800;font-size:30px;letter-spacing:-.03em}
+  .wordmark .b{color:var(--ink-violet)}
+  .tag{font-family:var(--hand);font-size:23px;color:var(--charcoal);transform:rotate(-1.5deg)}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;background:var(--paper);border:1px solid var(--line);
+    border-radius:999px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--muted)}
+  .chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;background:rgba(91,61,245,.1);color:var(--ink-violet)}
+
+  .avatar{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:15px;flex:none}
+
+  .face-wrap{border-radius:22px;overflow:hidden;border:1px solid var(--line);background:#fff}
+  .disclosure{font-size:10px;color:var(--muted);text-align:center}
+
+  /* viewing countdown */
+  .ring-wrap{position:relative;width:230px;height:230px;margin:6px auto}
+  .ring-wrap svg{transform:rotate(-90deg)}
+  .ring-bg{fill:none;stroke:var(--line);stroke-width:10}
+  .ring-fg{fill:none;stroke:var(--ink-violet);stroke-width:10;stroke-linecap:round;transition:stroke .3s}
+  .count{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:60px}
+  .urgent .ring-fg{stroke:var(--warning)}
+  .urgent .count{color:var(--warning);animation:pulse .5s infinite alternate}
+  @keyframes pulse{to{transform:scale(1.07)}}
+  .wipe{position:absolute;inset:0;background:var(--ink-violet);transform:scaleY(0);transform-origin:top;
+    z-index:30;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:800;font-size:28px}
+  .wipe.go{animation:wipe .5s ease forwards}
+  @keyframes wipe{0%{transform:scaleY(0)}45%{transform:scaleY(1)}55%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:1}}
+
+  /* drawing */
+  #pad{width:100%;height:300px;background:#fff;border-radius:18px;border:1px solid var(--line);touch-action:none;display:block}
+  .tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .swatch{width:26px;height:26px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
+  .swatch.sel{box-shadow:0 0 0 2px var(--charcoal)}
+  .tool-btn{border:1px solid var(--line);background:var(--cloud);border-radius:10px;padding:8px 10px;font-weight:700;font-size:13px;cursor:pointer}
+  .tool-btn.sel{background:var(--ink-violet);color:#fff;border-color:var(--ink-violet)}
+  .timer-bar{display:flex;align-items:center;gap:8px;font-weight:800;font-family:var(--display);font-size:18px}
+  .timer-track{flex:1;height:8px;background:var(--line);border-radius:999px;overflow:hidden}
+  .timer-fill{height:100%;width:100%;background:var(--ink-violet);transition:width 1s linear, background .3s}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .react{display:flex;gap:8px;justify-content:center;margin-top:6px}
+  .react button{font-size:22px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:6px 10px;cursor:pointer}
+  .trophy{font-size:40px}
+  .winner-banner{background:linear-gradient(180deg,var(--coral),#ff7a7e);color:#fff;border-radius:20px;padding:18px;text-align:center;box-shadow:0 6px 0 #d8474b}
+  table.board{width:100%;border-collapse:collapse;font-size:14px}
+  table.board td{padding:9px 6px;border-bottom:1px solid var(--line)}
+  table.board tr:last-child td{border-bottom:none}
+  .rank{font-family:var(--display);font-weight:800;color:var(--muted);width:24px}
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="title">Sketch<span>Artist</span> · M1 mockup</div>
+  <button id="prev" onclick="nav(-1)">◀</button>
+  <select id="jump" onchange="goto(this.value)"></select>
+  <button id="next" onclick="nav(1)">▶</button>
+</div>
+
+<div class="phone">
+  <div class="viewport">
+    <div class="notch"></div>
+
+    <!-- 1 HOME -->
+    <section class="screen active" data-name="1 · Home / mode select">
+      <span class="scr-label">home</span>
+      <div class="grow" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px">
+        <div class="logo-mark" id="homeMark"></div>
+        <div class="wordmark">Sketch<span class="b">Artist</span></div>
+        <div class="tag">draw a face from memory. badly. together.</div>
+      </div>
+      <div class="col">
+        <button class="btn btn-primary" onclick="goName('2 · In-person setup')">Play in-person</button>
+        <button class="btn btn-coral" onclick="goName('3 · Room')">Play online</button>
+        <button class="btn btn-ghost" onclick="goName('4 · Lobby')">How to play</button>
+      </div>
+      <p class="disclosure" style="margin-top:14px">Faces are AI-generated.</p>
+    </section>
+
+    <!-- 2 IN-PERSON SETUP -->
+    <section class="screen" data-name="2 · In-person setup">
+      <span class="scr-label">in-person</span>
+      <button class="back" onclick="goName('1 · Home / mode select')">◀ Back</button>
+      <h2 style="font-size:24px;margin:8px 0 4px">How are you playing?</h2>
+      <p class="muted" style="margin:0 0 16px;font-size:14px">Both work. Pick what fits the room.</p>
+      <div class="col">
+        <div class="card pick-card" onclick="goName('4 · Lobby')">
+          <div class="row" style="align-items:center"><span style="font-size:30px">📱</span>
+            <div><h3 style="font-size:17px">One shared device</h3>
+            <p class="muted" style="margin:3px 0 0;font-size:13px">Only the judge needs the app. Everyone draws on paper.</p></div></div>
+        </div>
+        <div class="card pick-card" onclick="goName('3 · Room')">
+          <div class="row" style="align-items:center"><span style="font-size:30px">👥</span>
+            <div><h3 style="font-size:17px">Everyone on their phones</h3>
+            <p class="muted" style="margin:3px 0 0;font-size:13px">Each player joins. Draw on paper or on-screen.</p></div></div>
+        </div>
+      </div>
+      <p class="muted center" style="margin-top:auto;font-size:12px">Rotating judge · play as long as you like</p>
+    </section>
+
+    <!-- 3 ROOM -->
+    <section class="screen" data-name="3 · Room">
+      <span class="scr-label">room</span>
+      <button class="back" onclick="goName('1 · Home / mode select')">◀ Back</button>
+      <div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:18px">
+        <div class="center">
+          <p class="muted" style="margin:0 0 6px;font-weight:700">Share this code</p>
+          <div style="font-family:var(--display);font-weight:800;font-size:58px;letter-spacing:.08em;color:var(--ink-violet)">RVK4</div>
+        </div>
+        <div class="card center">
+          <p class="muted" style="margin:0 0 8px;font-size:13px;font-weight:700">Joining instead?</p>
+          <div class="row"><input style="flex:1;font-family:var(--display);font-weight:800;font-size:20px;text-align:center;letter-spacing:.1em;border:1px solid var(--line);border-radius:12px;padding:10px" placeholder="CODE" maxlength="4">
+          <button class="btn btn-primary btn-sm" onclick="goName('4 · Lobby')">Join</button></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goName('4 · Lobby')">Continue to lobby</button>
+    </section>
+
+    <!-- 4 LOBBY -->
+    <section class="screen" data-name="4 · Lobby">
+      <span class="scr-label">lobby</span>
+      <div class="row" style="align-items:center;justify-content:space-between">
+        <h2 style="font-size:22px">Lobby</h2><span class="pill">Code · RVK4</span>
+      </div>
+      <p class="muted" style="margin:6px 0 12px;font-size:13px">5 players in — need 3+ to start</p>
+      <div class="col" id="lobbyPlayers"></div>
+      <div class="card" style="margin-top:14px">
+        <h3 style="font-size:14px;margin-bottom:10px">Game settings</h3>
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:600">Length</span>
+          <div class="row"><span class="chip">1 rotation</span><span class="pill">2×</span><span class="pill">3×</span></div>
+        </div>
+        <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:600">Drawing</span>
+          <div class="row"><span class="chip">On paper</span><span class="pill">On-screen</span></div>
+        </div>
+        <div class="row" style="justify-content:space-between;align-items:center">
+          <span style="font-size:13px;font-weight:600">Viewing window</span><span class="pill">30s</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:14px" onclick="goName('5 · Judge & face')">Start game</button>
+    </section>
+
+    <!-- 5 JUDGE ASSIGNMENT + FACE PICK -->
+    <section class="screen" data-name="5 · Judge & face">
+      <span class="scr-label">round start</span>
+      <div class="center" style="margin-bottom:6px">
+        <span class="pill">Round 1 of 5</span>
+        <h2 style="font-size:26px;margin:12px 0 2px">You're the Judge</h2>
+        <p class="muted" style="margin:0;font-size:14px">Pick a face. Then everyone draws it from memory.</p>
+      </div>
+      <p style="font-weight:700;font-size:13px;margin:14px 0 8px">Choose this round's face</p>
+      <div class="grid2" id="facePick"></div>
+      <button class="btn btn-primary" id="faceGo" style="margin-top:14px;opacity:.4;pointer-events:none" onclick="goName('6 · Viewing window')">Show it to the room</button>
+      <p class="muted center" style="margin-top:10px;font-size:12px">Non-judges see: “Alex is choosing a face…”</p>
+    </section>
+
+    <!-- 6 VIEWING WINDOW -->
+    <section class="screen" data-name="6 · Viewing window">
+      <span class="scr-label">memorize</span>
+      <div class="center"><h2 style="font-size:22px">Study the face</h2>
+      <p class="muted" style="margin:4px 0 0;font-size:13px">It disappears when the timer ends</p></div>
+      <div class="ring-wrap" id="ringWrap">
+        <svg width="230" height="230"><circle class="ring-bg" cx="115" cy="115" r="100"></circle>
+        <circle class="ring-fg" id="ringFg" cx="115" cy="115" r="100"></circle></svg>
+        <div class="count" id="count">30</div>
+      </div>
+      <div class="face-wrap" id="viewFace" style="max-width:230px;margin:0 auto"></div>
+      <div class="grow"></div>
+      <button class="btn btn-ghost" onclick="endViewing(true)">Skip ▸ <span class="muted" style="font-weight:600">(demo)</span></button>
+      <div class="wipe" id="wipe">Time to draw!</div>
+    </section>
+
+    <!-- 7 DRAWING -->
+    <section class="screen" data-name="7 · Drawing">
+      <span class="scr-label">draw</span>
+      <div class="timer-bar"><span>✏️</span><div class="timer-track"><div class="timer-fill" id="drawFill"></div></div><span id="drawTime">90</span></div>
+      <p class="muted center" style="margin:8px 0;font-size:12px">Face hidden — draw from memory</p>
+      <canvas id="pad"></canvas>
+      <div class="tools">
+        <span class="swatch sel" style="background:#1A1A1A" data-c="#1A1A1A" onclick="setColor(this)"></span>
+        <span class="swatch" style="background:#5B3DF5" data-c="#5B3DF5" onclick="setColor(this)"></span>
+        <span class="swatch" style="background:#FF5A5F" data-c="#FF5A5F" onclick="setColor(this)"></span>
+        <span class="swatch" style="background:#2EC4B6" data-c="#2EC4B6" onclick="setColor(this)"></span>
+        <span class="swatch" style="background:#FFD23F" data-c="#FFD23F" onclick="setColor(this)"></span>
+        <button class="tool-btn sel" id="brushBtn" onclick="setTool('brush')">Brush</button>
+        <button class="tool-btn" id="eraseBtn" onclick="setTool('erase')">Eraser</button>
+        <button class="tool-btn" onclick="clearPad()">Clear</button>
+      </div>
+      <button class="btn btn-coral" style="margin-top:12px" onclick="goName('8 · Reveal')">Submit drawing</button>
+    </section>
+
+    <!-- 8 REVEAL -->
+    <section class="screen" data-name="8 · Reveal">
+      <span class="scr-label">reveal · judge-led</span>
+      <h2 style="font-size:22px" class="center">The reveal</h2>
+      <p class="muted center" style="margin:4px 0 10px;font-size:13px">You're judging. Reveal them one by one.</p>
+      <div class="row" style="gap:12px;align-items:flex-start">
+        <div style="flex:1"><p class="muted" style="font-size:11px;font-weight:700;margin:0 0 4px">THE FACE</p>
+          <div class="face-wrap" id="revealFace"></div></div>
+        <div style="flex:1"><p class="muted" style="font-size:11px;font-weight:700;margin:0 0 4px">DRAWINGS (<span id="revealCount">0</span>/4)</p>
+          <div class="face-wrap" id="revealDrawing" style="background:#fff;display:grid;place-items:center;min-height:120px"><span class="muted" style="font-size:13px">tap reveal →</span></div>
+          <p class="center" id="revealWho" style="font-weight:700;font-size:13px;margin:6px 0 0">&nbsp;</p>
+        </div>
+      </div>
+      <div class="react"><button>😂</button><button>😮</button><button>👏</button><button>🔥</button></div>
+      <div class="grow"></div>
+      <button class="btn btn-primary" id="revealBtn" onclick="revealNext()">Reveal next ▸</button>
+    </section>
+
+    <!-- 9 JUDGE PICK -->
+    <section class="screen" data-name="9 · Judge's pick">
+      <span class="scr-label">pick winner</span>
+      <h2 style="font-size:22px" class="center">Pick the winner</h2>
+      <p class="muted center" style="margin:4px 0 12px;font-size:13px">Best can mean anything you want.</p>
+      <div class="grid2" id="pickGrid"></div>
+      <button class="btn btn-coral" id="pickGo" style="margin-top:14px;opacity:.4;pointer-events:none" onclick="goName('10 · Round result')">Crown the winner</button>
+      <p class="muted center" style="margin-top:10px;font-size:12px">Honorable Mention → post-M1</p>
+    </section>
+
+    <!-- 10 ROUND RESULT -->
+    <section class="screen" data-name="10 · Round result">
+      <span class="scr-label">result</span>
+      <div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:14px">
+        <div class="winner-banner"><div class="trophy">🏆</div>
+          <div style="font-family:var(--display);font-weight:800;font-size:24px">Sam wins Round 1</div>
+          <div style="font-family:var(--hand);font-size:20px">“the eyebrows really sell it”</div></div>
+        <div class="row" style="gap:12px">
+          <div style="flex:1"><p class="muted" style="font-size:11px;font-weight:700;margin:0 0 4px">FACE</p><div class="face-wrap" id="resFace"></div></div>
+          <div style="flex:1"><p class="muted" style="font-size:11px;font-weight:700;margin:0 0 4px">WINNER</p><div class="face-wrap" id="resDraw" style="background:#fff"></div></div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="goName('11 · End of game')">Next round ▸</button>
+    </section>
+
+    <!-- 11 END OF GAME -->
+    <section class="screen" data-name="11 · End of game">
+      <span class="scr-label">game over</span>
+      <div class="center" style="margin-bottom:10px"><div class="trophy">👑</div>
+        <h2 style="font-size:26px">Sam takes the game</h2>
+        <p class="muted" style="margin:2px 0 0;font-size:14px">5 rounds · everyone judged once</p></div>
+      <div class="card">
+        <table class="board"><tbody>
+          <tr><td class="rank">1</td><td>👑 Sam</td><td style="text-align:right;font-weight:800">2 wins</td></tr>
+          <tr><td class="rank">2</td><td>Mia</td><td style="text-align:right;font-weight:800">1 win</td></tr>
+          <tr><td class="rank">3</td><td>You</td><td style="text-align:right;font-weight:800">1 win</td></tr>
+          <tr><td class="rank">4</td><td>Alex</td><td style="text-align:right;font-weight:800">1 win</td></tr>
+          <tr><td class="rank">5</td><td>Jordan</td><td style="text-align:right;font-weight:800">0 wins</td></tr>
+        </tbody></table>
+      </div>
+      <div class="col" style="margin-top:14px">
+        <button class="btn btn-coral" onclick="alert('M1 share: branded PNG of face + winning drawing via OS share sheet')">Share the gallery</button>
+        <button class="btn btn-primary" onclick="goName('1 · Home / mode select')">Play again</button>
+      </div>
+      <p class="disclosure" style="margin-top:12px">All-rounds gallery view → M2 · Faces are AI-generated.</p>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ---------- SVG face placeholders (stand-ins for AI-generated faces) ---------- */
+function face(bg, opts){
+  const o = opts||{};
+  return `<svg viewBox="0 0 100 120" width="100%" style="display:block">
+    <rect width="100" height="120" fill="${bg}"/>
+    ${o.hair||''}
+    <ellipse cx="50" cy="58" rx="26" ry="30" fill="#f2d2b6"/>
+    ${o.ears||'<circle cx="24" cy="60" r="5" fill="#f2d2b6"/><circle cx="76" cy="60" r="5" fill="#f2d2b6"/>'}
+    ${o.brows||'<rect x="33" y="48" width="12" height="2.4" rx="1.2" fill="#5b4636"/><rect x="55" y="48" width="12" height="2.4" rx="1.2" fill="#5b4636"/>'}
+    <circle cx="40" cy="55" r="2.6" fill="#26201b"/><circle cx="60" cy="55" r="2.6" fill="#26201b"/>
+    ${o.nose||'<path d="M50 57 L47 67 L53 67 Z" fill="#e3b893"/>'}
+    ${o.mouth||'<path d="M42 76 Q50 82 58 76" stroke="#9c5b52" stroke-width="2.2" fill="none" stroke-linecap="round"/>'}
+    ${o.extra||''}
+  </svg>`;
+}
+const FACES = {
+  glasses: face('#e9e3f7',{hair:'<path d="M24 44 Q50 18 76 44 L76 36 Q50 14 24 36 Z" fill="#3a3a3a"/>',
+     extra:'<g stroke="#1A1A1A" stroke-width="2" fill="none"><circle cx="40" cy="55" r="8"/><circle cx="60" cy="55" r="8"/><line x1="48" y1="55" x2="52" y2="55"/></g>'}),
+  mustache: face('#e6f3f1',{hair:'<path d="M26 40 Q50 24 74 40 L74 32 Q50 20 26 32 Z" fill="#6b4a2a"/>',
+     mouth:'<path d="M40 74 q10 6 20 0" stroke="#7a4a2a" stroke-width="6" fill="none" stroke-linecap="round"/>',
+     brows:'<rect x="32" y="47" width="14" height="3" rx="1.5" fill="#4a3420"/><rect x="54" y="47" width="14" height="3" rx="1.5" fill="#4a3420"/>'}),
+  bun: face('#fdeccf',{hair:'<circle cx="50" cy="24" r="9" fill="#2c2c2c"/><path d="M22 50 Q50 22 78 50 L78 42 Q50 20 22 42 Z" fill="#2c2c2c"/>',
+     extra:'<circle cx="24" cy="66" r="3" fill="#FFD23F"/><circle cx="76" cy="66" r="3" fill="#FFD23F"/>',
+     mouth:'<path d="M42 75 Q50 83 58 75" stroke="#c0392b" stroke-width="2.6" fill="none" stroke-linecap="round"/>'}),
+  beard: face('#f3e2e2',{hair:'<path d="M26 42 Q50 26 74 42 L74 36 Q50 26 26 36 Z" fill="#9a9a9a"/>',
+     extra:'<path d="M28 64 Q50 104 72 64 Q66 86 50 88 Q34 86 28 64 Z" fill="#b7b7b7"/>',
+     brows:'<rect x="33" y="49" width="12" height="3" rx="1.5" fill="#8a8a8a"/><rect x="55" y="49" width="12" height="3" rx="1.5" fill="#8a8a8a"/>'})
+};
+const FACE_KEYS = ['glasses','mustache','bun','beard'];
+const FACE_LABEL = {glasses:'Bold glasses',mustache:'Big mustache',bun:'Bun + earrings',beard:'Grey beard'};
+
+/* deliberately bad "drawings" */
+function badDraw(seed){
+  const s = seed*7;
+  return `<svg viewBox="0 0 100 120" width="100%" style="display:block;background:#fff">
+    <ellipse cx="50" cy="60" rx="${24+seed*2}" ry="${30-seed}" fill="none" stroke="#1A1A1A" stroke-width="2.5"/>
+    <circle cx="${40+seed}" cy="${52+seed}" r="${3+ (seed%3)}" fill="#1A1A1A"/>
+    <circle cx="${62-seed}" cy="54" r="${2+ (seed%4)}" fill="#1A1A1A"/>
+    <path d="M${36+s%5} ${78} q${10} ${seed%2? 9 : -6} ${20} 0" stroke="#FF5A5F" stroke-width="3" fill="none"/>
+    <path d="M30 42 q20 ${seed*4} 40 0" stroke="#5B3DF5" stroke-width="2.5" fill="none"/>
+    <text x="50" y="116" font-family="Caveat" font-size="11" fill="#6B6B6B" text-anchor="middle">player ${seed+1}</text>
+  </svg>`;
+}
+
+/* logo mark */
+document.getElementById('homeMark').innerHTML =
+  `<svg viewBox="0 0 60 60" width="56" height="56">
+    <circle cx="22" cy="26" r="3.4" fill="#FAF7F2"/><circle cx="40" cy="26" r="3.4" fill="#FAF7F2"/>
+    <path d="M18 40 q12 9 24 0" stroke="#FAF7F2" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+    <path d="M14 16 q16 -7 32 0" stroke="#FFD23F" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </svg>`;
+
+/* lobby players */
+const PLAYERS = [['You','#5B3DF5'],['Alex','#FF5A5F'],['Mia','#2EC4B6'],['Sam','#9B5DE5'],['Jordan','#FF9F1C']];
+document.getElementById('lobbyPlayers').innerHTML = PLAYERS.map((p,i)=>
+  `<div class="card" style="padding:10px 12px;display:flex;align-items:center;gap:10px">
+     <span class="avatar" style="background:${p[1]}">${p[0][0]}</span>
+     <span style="font-weight:700">${p[0]}</span>
+     ${i===0?'<span class="chip" style="margin-left:auto">host</span>':'<span class="pill" style="margin-left:auto">ready</span>'}
+   </div>`).join('');
+
+/* face pick (judge) */
+let pickedFace=null;
+document.getElementById('facePick').innerHTML = FACE_KEYS.map(k=>
+  `<div class="card pick-card" style="padding:8px" data-k="${k}" onclick="pickFace('${k}')">
+     <div class="face-wrap">${FACES[k]}</div>
+     <p class="center" style="font-size:12px;font-weight:700;margin:8px 0 2px">${FACE_LABEL[k]}</p></div>`).join('');
+function pickFace(k){
+  pickedFace=k;
+  document.querySelectorAll('#facePick .pick-card').forEach(c=>c.classList.toggle('sel',c.dataset.k===k));
+  const go=document.getElementById('faceGo'); go.style.opacity=1; go.style.pointerEvents='auto';
+  document.getElementById('viewFace').innerHTML=FACES[k];
+  document.getElementById('revealFace').innerHTML=FACES[k];
+  document.getElementById('resFace').innerHTML=FACES[k];
+}
+
+/* pick winner grid */
+let pickedWin=null;
+document.getElementById('pickGrid').innerHTML = [0,1,2,3].map(i=>
+  `<div class="card pick-card" style="padding:8px" data-i="${i}" onclick="pickWin(${i})">
+     <div class="face-wrap">${badDraw(i)}</div></div>`).join('');
+function pickWin(i){
+  pickedWin=i;
+  document.querySelectorAll('#pickGrid .pick-card').forEach(c=>c.classList.toggle('sel',+c.dataset.i===i));
+  const go=document.getElementById('pickGo'); go.style.opacity=1; go.style.pointerEvents='auto';
+  document.getElementById('resDraw').innerHTML=badDraw(i);
+}
+
+/* reveal sequence */
+let revealed=0;
+function revealNext(){
+  if(revealed>=4){ goName("9 · Judge's pick"); return; }
+  document.getElementById('revealDrawing').innerHTML=badDraw(revealed);
+  document.getElementById('revealWho').textContent=['Alex','Mia','Sam','Jordan'][revealed];
+  revealed++;
+  document.getElementById('revealCount').textContent=revealed;
+  document.getElementById('revealBtn').textContent = revealed>=4 ? 'Go to judging ▸' : 'Reveal next ▸';
+}
+
+/* ---------- viewing countdown ---------- */
+const R=100, C=2*Math.PI*R;
+const ringFg=document.getElementById('ringFg'); ringFg.style.strokeDasharray=C;
+let vTimer=null, vLeft=30;
+function startViewing(){
+  if(!pickedFace) pickFace('glasses');
+  clearInterval(vTimer); vLeft=30; revealed=0;
+  document.getElementById('revealDrawing').innerHTML='<span class="muted" style="font-size:13px">tap reveal →</span>';
+  document.getElementById('revealWho').innerHTML='&nbsp;'; document.getElementById('revealCount').textContent=0;
+  document.getElementById('revealBtn').textContent='Reveal next ▸';
+  document.getElementById('ringWrap').classList.remove('urgent');
+  document.getElementById('wipe').classList.remove('go');
+  document.getElementById('count').textContent=vLeft; ringFg.style.strokeDashoffset=0;
+  vTimer=setInterval(()=>{
+    vLeft--;
+    document.getElementById('count').textContent=Math.max(vLeft,0);
+    ringFg.style.strokeDashoffset = C*((30-vLeft)/30);
+    if(vLeft<=5) document.getElementById('ringWrap').classList.add('urgent');
+    if(vLeft<=0) endViewing(false);
+  }, 500); /* sped up for review */
+}
+function endViewing(skip){
+  clearInterval(vTimer);
+  const w=document.getElementById('wipe'); w.classList.add('go');
+  setTimeout(()=>goName('7 · Drawing'), skip?250:560);
+}
+
+/* ---------- drawing pad ---------- */
+let ctx, drawing=false, col='#1A1A1A', tool='brush', dTimer=null, dLeft=90;
+function initPad(){
+  const cv=document.getElementById('pad');
+  const r=cv.getBoundingClientRect();
+  cv.width=r.width; cv.height=300;
+  ctx=cv.getContext('2d'); ctx.lineCap='round'; ctx.lineJoin='round';
+  const pos=e=>{const b=cv.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-b.left,y:t.clientY-b.top};};
+  const start=e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault();};
+  const move=e=>{if(!drawing)return;const p=pos(e);
+    ctx.strokeStyle = tool==='erase'?'#fff':col; ctx.lineWidth = tool==='erase'?18:3.5;
+    ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault();};
+  const end=()=>drawing=false;
+  cv.onmousedown=start;cv.onmousemove=move;window.addEventListener('mouseup',end);
+  cv.ontouchstart=start;cv.ontouchmove=move;cv.ontouchend=end;
+}
+function setColor(el){col=el.dataset.c;tool='brush';
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('sel',s===el));
+  document.getElementById('brushBtn').classList.add('sel');document.getElementById('eraseBtn').classList.remove('sel');}
+function setTool(t){tool=t;
+  document.getElementById('brushBtn').classList.toggle('sel',t==='brush');
+  document.getElementById('eraseBtn').classList.toggle('sel',t==='erase');}
+function clearPad(){ctx&&ctx.clearRect(0,0,9999,9999);}
+function startDrawTimer(){
+  clearInterval(dTimer); dLeft=90;
+  const f=document.getElementById('drawFill'), t=document.getElementById('drawTime');
+  f.style.width='100%'; f.style.background='var(--ink-violet)'; t.textContent=dLeft;
+  dTimer=setInterval(()=>{ dLeft--; t.textContent=Math.max(dLeft,0);
+    f.style.width=Math.max(dLeft/90*100,0)+'%';
+    if(dLeft<=15) f.style.background='var(--warning)';
+    if(dLeft<=0){clearInterval(dTimer);}
+  },1000);
+}
+
+/* ---------- navigation ---------- */
+const screens=[...document.querySelectorAll('.screen')];
+const jump=document.getElementById('jump');
+screens.forEach((s,i)=>{const o=document.createElement('option');o.value=s.dataset.name;o.textContent=s.dataset.name;jump.appendChild(o);});
+let idx=0;
+function render(){
+  screens.forEach((s,i)=>s.classList.toggle('active',i===idx));
+  jump.value=screens[idx].dataset.name;
+  document.getElementById('prev').disabled=idx===0;
+  document.getElementById('next').disabled=idx===screens.length-1;
+  const name=screens[idx].dataset.name;
+  if(name==='6 · Viewing window') startViewing();
+  if(name==='7 · Drawing'){ requestAnimationFrame(()=>{initPad();startDrawTimer();}); }
+}
+function goto(name){ idx=screens.findIndex(s=>s.dataset.name===name); if(idx<0)idx=0; render(); document.querySelector('.viewport').scrollTop=0; }
+function goName(name){ goto(name); }
+function nav(d){ idx=Math.min(Math.max(idx+d,0),screens.length-1); render(); }
+render();
+</script>
+</body>
+</html>
